@@ -1,0 +1,31 @@
+{
+  "timezone": "America/New_York",
+  "minSlots": 3,
+  "maxMonthsToScan": 6,
+  "links": [
+    {
+      "name": "non-crm-copilot-websights-mt",
+      "url": "https://zoominfo.chilipiper.com/round-robin/non-crm-copilot-websights-mt?assignee=all&meetingTypeId=f1f99e13-b759-4862-bb22-2832df1b5d55"
+    },
+    {
+      "name": "non-crm-copilot-websights-ht-custom",
+      "url": "https://zoominfo.chilipiper.com/round-robin/non-crm-copilot-websights-ht-custom?assignee=all&meetingTypeId=f1f99e13-b759-4862-bb22-2832df1b5d55"
+    },
+    {
+      "name": "crm-connector-mt",
+      "url": "https://zoominfo.chilipiper.com/round-robin/crm-connector-mt?assignee=all&meetingTypeId=f1f99e13-b759-4862-bb22-2832df1b5d55"
+    },
+    {
+      "name": "crm-connector-ht-custom",
+      "url": "https://zoominfo.chilipiper.com/round-robin/crm-connector-ht-custom?meetingTypeId=f1f99e13-b759-4862-bb22-2832df1b5d55"
+    },
+    {
+      "name": "crm-enrich-essential-mt",
+      "url": "https://zoominfo.chilipiper.com/round-robin/crm-enrich-essential-mt?assignee=all&meetingTypeId=2c40efb3-1cda-41e6-80ef-9c17c7f5592e"
+    },
+    {
+      "name": "crm-enrich-essential-ht-custom",
+      "url": "https://zoominfo.chilipiper.com/round-robin/crm-enrich-essential-ht-custom?assignee=all&meetingTypeId=2c40efb3-1cda-41e6-80ef-9c17c7f5592e"
+    }
+  ]
+}

@@ -5,6 +5,11 @@ on:
   schedule:
     - cron: "10 11 * * 1-5"  # Weekdays 11:10 UTC (~7:10 AM ET)
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,11 +23,9 @@ jobs:
         with:
           node-version: "20"
 
-      # Install Playwright (no package.json needed)
       - name: Install Playwright package
         run: npm i playwright@1.47.0 --no-save
 
-      # Cache Chromium binaries to speed up subsequent runs
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -34,21 +37,30 @@ jobs:
       - name: Install Chromium browser
         run: npx playwright install chromium
 
-      # Prepare the site first with a fallback JSON to avoid 404 on the very first load
-      - name: Prepare static site (with fallback)
+      # Publish a fallback JSON to avoid 404 even if checker fails
+      - name: Prepare static site (fallback first)
         run: |
           mkdir -p site
           cp web/index.html site/index.html
           echo "[]" > site/availability.json
 
-      # Run checker; if it succeeds, overwrite fallback JSON
       - name: Run ChiliPiper check
         run: |
           node check-availability.cjs
           if [ -f "availability.json" ]; then cp availability.json site/availability.json; fi
 
-      - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: site
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

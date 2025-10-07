@@ -1,7 +1,7 @@
 {
   "timezone": "America/New_York",
   "minSlots": 3,
-  "maxMonthsToScan": 6,
+  "maxMonthsToScan": 12,
   "links": [
     {
       "name": "non-crm-copilot-websights-mt",

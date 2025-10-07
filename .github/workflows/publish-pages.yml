@@ -23,32 +23,38 @@ jobs:
         with:
           node-version: "20"
 
+      # Install Playwright runtime (no package.json needed)
       - name: Install Playwright package
         run: npm i playwright@1.47.0 --no-save
 
+      # Cache browser binaries so runs stay fast
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-v1
+          key: pw-${{ runner.os }}-chrome-v1
           restore-keys: |
             pw-${{ runner.os }}-
 
-      - name: Install Chromium browser
-        run: npx playwright install chromium
+      # Install real Chrome channel for better compatibility with ChiliPiper
+      - name: Install Chrome for Playwright
+        run: npx playwright install chrome
 
-      # Publish a fallback JSON to avoid 404 even if checker fails
+      # Publish a fallback JSON so the page never 404s, even if the checker fails
       - name: Prepare static site (fallback first)
         run: |
           mkdir -p site
           cp web/index.html site/index.html
           echo "[]" > site/availability.json
 
-      - name: Run ChiliPiper check
+      # Run the checker; copy availability.json and any debug files for troubleshooting
+      - name: Run ChiliPiper check (with debug)
         run: |
           node check-availability.cjs
           if [ -f "availability.json" ]; then cp availability.json site/availability.json; fi
+          if [ -d "debug" ]; then mkdir -p site/debug && cp -r debug/* site/debug/; fi
 
+      # Upload site/ as the Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

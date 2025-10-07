@@ -32,13 +32,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-chrome-v1
+          key: pw-${{ runner.os }}-chromium-v1
           restore-keys: |
             pw-${{ runner.os }}-
 
-      # Install real Chrome channel for better compatibility with ChiliPiper
-      - name: Install Chrome for Playwright
-        run: npx playwright install chrome
+      # Install Chromium for Playwright (stable choice on GitHub runners)
+      - name: Install Chromium
+        run: npx playwright install chromium
 
       # Publish a fallback JSON so the page never 404s, even if the checker fails
       - name: Prepare static site (fallback first)
@@ -47,12 +47,18 @@ jobs:
           cp web/index.html site/index.html
           echo "[]" > site/availability.json
 
-      # Run the checker; copy availability.json and any debug files for troubleshooting
-      - name: Run ChiliPiper check (with debug)
+      # Run the checker; do not fail the job if it errors.
+      # If availability.json exists, overwrite the fallback.
+      - name: Run ChiliPiper check (non-fatal)
         run: |
+          set +e
           node check-availability.cjs
+          EXIT=$?
           if [ -f "availability.json" ]; then cp availability.json site/availability.json; fi
           if [ -d "debug" ]; then mkdir -p site/debug && cp -r debug/* site/debug/; fi
+          # Don't fail the job on checker errors; keep publishing the site
+          if [ $EXIT -ne 0 ]; then echo "Checker errored (exit $EXIT) — continuing with fallback JSON"; fi
+          exit 0
 
       # Upload site/ as the Pages artifact
       - name: Upload Pages artifact

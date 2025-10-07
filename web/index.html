@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ChiliPiper Availability</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{margin:0;font-family:system-ui,Arial;background:#F8F9FF;color:#010D39}
+    header{background:#202B52;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+    header h1{margin:0;font-size:18px}
+    main{padding:20px}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    th,td{padding:12px 10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+    th{background:#202B52;color:#fff;position:sticky;top:0}
+    tr:hover td{background:#fafbff}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;color:#fff}
+    .ok{background:#038C73}.bad{background:#DC3545}
+    .meta{color:#3F486B;margin:10px 0 16px}
+    .controls{margin:0 0 16px 0;display:flex;gap:8px}
+    button{border:0;background:#0961FB;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <header><h1>ChiliPiper Availability</h1></header>
+  <main>
+    <div class="meta" id="updated">Loading…</div>
+    <div class="controls">
+      <button id="refresh">Refresh</button>
+      <button id="sort">Sort by Days</button>
+    </div>
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th style="width:35%">Queue</th>
+          <th style="width:25%">Earliest Date</th>
+          <th style="width:20%">Days From Today</th>
+          <th style="width:10%">Slots</th>
+          <th style="width:10%">Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+  <script>
+    const updated = document.getElementById("updated");
+    const tbody = document.querySelector("#tbl tbody");
+    const refresh = document.getElementById("refresh");
+    const sortBtn = document.getElementById("sort");
+    let data = [];
+    let asc = true;
+
+    async function load() {
+      updated.textContent = "Loading…";
+      try {
+        const res = await fetch("availability.json", { cache: "no-store" });
+        if (!res.ok) {
+          tbody.innerHTML = "<tr><td colspan='5'>No data yet. Try again after the first workflow run.</td></tr>";
+          updated.textContent = "Last updated: not yet";
+          return;
+        }
+        data = await res.json();
+        render(data);
+      } catch {
+        tbody.innerHTML = "<tr><td colspan='5'>Could not load data.</td></tr>";
+      }
+    }
+    function render(rows) {
+      if (!rows.length) {
+        tbody.innerHTML = "<tr><td colspan='5'>No records.</td></tr>";
+        updated.textContent = "Last updated: just now";
+        return;
+      }
+      const last = rows.reduce((a,b)=> a.scannedAt > b.scannedAt ? a : b);
+      updated.textContent = "Last updated: " + new Date(last.scannedAt).toLocaleString();
+      tbody.innerHTML = rows.map(r=>{
+        const status = r.earliestDate ? "<span class='pill ok'>Found</span>" : "<span class='pill bad'>Not Found</span>";
+        return `<tr>
+          <td>${r.name}</td>
+          <td>${r.earliestDate || "—"}</td>
+          <td>${r.daysFromToday ?? "—"}</td>
+          <td>${r.slotCountObserved ?? "—"}</td>
+          <td>${status}</td>
+        </tr>`;
+      }).join("");
+    }
+    refresh.addEventListener("click", load);
+    sortBtn.addEventListener("click", () => {
+      const withDays = data.slice().sort((a,b)=>{
+        const av = a.daysFromToday ?? Number.POSITIVE_INFINITY;
+        const bv = b.daysFromToday ?? Number.POSITIVE_INFINITY;
+        return asc ? av - bv : bv - av;
+      });
+      asc = !asc;
+      render(withDays);
+    });
+    load();
+  </script>
+</body>
+</html>

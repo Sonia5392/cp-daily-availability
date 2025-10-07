@@ -1,6 +1,6 @@
 {
   "timezone": "America/New_York",
-  "minSlots": 3,
+  "minSlots": 1,
   "maxMonthsToScan": 12,
   "links": [
     {

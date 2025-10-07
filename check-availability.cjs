@@ -120,11 +120,11 @@ async function findEarliestDayWithSlots(page, debug){
 
 (async()=>{
   // Use Chrome channel (closer to real Chrome)
-  const browser = await chromium.launch({
-    channel: "chrome",
-    headless: true,
-    args: ["--disable-blink-features=AutomationControlled"]
-  });
+ const browser = await chromium.launch({
+  headless: true,
+  args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled"]
+});
+
   const context = await browser.newContext({
     timezoneId: TZ,
     locale: "en-US",
